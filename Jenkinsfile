@@ -1,7 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        ARCHIVE_NAME = "python-project-${BUILD_NUMBER}.tar.gz"
+    }
+
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -10,8 +15,6 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Setting up Python environment and installing dependencies...'
-
                 bat '''
                 python -m venv venv
 
@@ -21,24 +24,27 @@ pipeline {
 
                 if exist requirements.txt (
                     pip install -r requirements.txt
-                ) else (
-                    echo requirements.txt not found. Skipping dependency installation.
                 )
+                '''
+            }
+        }
+
+        stage('Create Artifact') {
+            steps {
+                bat '''
+                tar -czf %ARCHIVE_NAME% ^
+                --exclude=venv ^
+                --exclude=.git ^
+                --exclude=.gitignore ^
+                *
                 '''
             }
         }
     }
 
     post {
-        always {
-            echo 'Archiving build artifacts...'
-
-            archiveArtifacts(
-                artifacts: '**/*',
-                excludes: 'venv/**',
-                fingerprint: true,
-                allowEmptyArchive: true
-            )
+        success {
+            archiveArtifacts artifacts: '*.tar.gz', fingerprint: true
         }
     }
 }
