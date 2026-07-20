@@ -10,18 +10,18 @@ pipeline {
 
         stage('Build Environment') {
             steps {
-                echo 'Setting up Python environment on Windows...'
-                bat '''
-                    :: Create the virtual environment
-                    python -m venv venv
+                echo 'Setting up Python environment on Ubuntu...'
+                sh '''
+                    # Create the virtual environment
+                    python3 -m venv venv
                     
-                    :: Activate the environment and install dependencies
-                    call venv\\Scripts\\activate
-                    python -m pip install --upgrade pip
+                    # Activate environment and install dependencies
+                    . venv/bin/activate
+                    python3 -m pip install --upgrade pip
                     
-                    if exist requirements.txt (
+                    if [ -f requirements.txt ]; then
                         pip install -r requirements.txt
-                    )
+                    fi
                 '''
             }
         }
@@ -30,8 +30,7 @@ pipeline {
     post {
         always {
             echo 'Archiving build artifacts...'
-            // Excludes the Windows venv folder from being archived
-            archiveArtifacts artifacts: '**/*', excludes: 'venv/** ', fingerprint: true, allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/*', excludes: 'venv/**', fingerprint: true, allowEmptyArchive: true
         }
     }
 }
