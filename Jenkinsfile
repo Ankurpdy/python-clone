@@ -46,7 +46,7 @@ pipeline {
       steps {
         sh '''
           rm -f ASCIICAM.tar.gz
-          tar -czf ASCIICAM.tar.gz main.py helpers.py image_handler.py font_utils.py requirements.txt README.md LICENSE consola.ttf img
+          tar -czf ASCIICAM.tar.gz main.py helpers.py image_handler.py font_utils.py requirements.txt README.md LICENSE img
         '''
         archiveArtifacts artifacts: 'ASCIICAM.tar.gz', fingerprint: true
       }
