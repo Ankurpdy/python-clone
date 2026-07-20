@@ -42,17 +42,6 @@ pipeline {
       }
     }
 
-    stage('Check required assets') {
-      steps {
-        sh '''
-          test -f consola.ttf || {
-            echo 'consola.ttf is missing. Add a redistributable font with this name before packaging ASCIICAM.'
-            exit 1
-          }
-        '''
-      }
-    }
-
     stage('Package application') {
       steps {
         sh '''
