@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -11,43 +10,28 @@ pipeline {
 
         stage('Build Environment') {
             steps {
-                sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
-
+                echo 'Setting up Python environment on Windows...'
+                bat '''
+                    :: Create the virtual environment
+                    python -m venv venv
+                    
+                    :: Activate the environment and install dependencies
+                    call venv\\Scripts\\activate
                     python -m pip install --upgrade pip
-                    python -m pip install build
-
-                    if [ -f requirements.txt ]; then
+                    
+                    if exist requirements.txt (
                         pip install -r requirements.txt
-                    fi
-                '''
-            }
-        }
-
-        stage('Build Package') {
-            steps {
-                sh '''
-                    . venv/bin/activate
-
-                    python -m build
+                    )
                 '''
             }
         }
     }
 
     post {
-        success {
-            archiveArtifacts artifacts: 'dist/*.tar.gz', fingerprint: true
-            echo 'Source distribution (.tar.gz) archived successfully.'
-        }
-
-        failure {
-            echo 'Build failed.'
-        }
-
         always {
-            cleanWs()
+            echo 'Archiving build artifacts...'
+            // Excludes the Windows venv folder from being archived
+            archiveArtifacts artifacts: '**/*', excludes: 'venv/** ', fingerprint: true, allowEmptyArchive: true
         }
     }
 }
