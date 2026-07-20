@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        ARCHIVE_NAME = "python-project-${BUILD_NUMBER}.tar.gz"
-    }
-
     stages {
 
         stage('Checkout') {
@@ -13,30 +9,28 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build Environment') {
             steps {
-                bat '''
-                python -m venv venv
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
 
-                call venv\\Scripts\\activate
+                    python -m pip install --upgrade pip
+                    python -m pip install build
 
-                python -m pip install --upgrade pip
-
-                if exist requirements.txt (
-                    pip install -r requirements.txt
-                )
+                    if [ -f requirements.txt ]; then
+                        pip install -r requirements.txt
+                    fi
                 '''
             }
         }
 
-        stage('Create Artifact') {
+        stage('Build Package') {
             steps {
-                bat '''
-                tar -czf %ARCHIVE_NAME% ^
-                --exclude=venv ^
-                --exclude=.git ^
-                --exclude=.gitignore ^
-                *
+                sh '''
+                    . venv/bin/activate
+
+                    python -m build
                 '''
             }
         }
@@ -44,7 +38,16 @@ pipeline {
 
     post {
         success {
-            archiveArtifacts artifacts: '*.tar.gz', fingerprint: true
+            archiveArtifacts artifacts: 'dist/*.tar.gz', fingerprint: true
+            echo 'Source distribution (.tar.gz) archived successfully.'
+        }
+
+        failure {
+            echo 'Build failed.'
+        }
+
+        always {
+            cleanWs()
         }
     }
 }
