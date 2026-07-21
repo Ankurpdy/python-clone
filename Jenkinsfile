@@ -28,10 +28,10 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-              sh '''
-                    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-                      ${VM_USER}@${VM_IP} "cd ${VM_DIR} && docker build -t python-app:latest ."
-                '''
+             sh '''
+               ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+              ankur@192.168.189.128 "cd /home/ankur/python-app && docker build -t python-app:latest ."
+            '''
             }
         }
     }
