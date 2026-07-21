@@ -21,7 +21,7 @@ pipeline {
         stage('Copy Project to VM') {
             steps {
                 sh """
-                    rsync -av --delete -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./ ${VM_USER}@${VM_HOST}:${APP_DIR}/
+                    rsync -av --delete -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./ ankur@192.168.189.128:/home/ankur/python-app/
                 """
             }
         }
