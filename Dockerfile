@@ -1,9 +1,16 @@
-FROM python:3.12-slim
+FROM python:3.10-slim
 
+# Set the working directory
 WORKDIR /app
 
-COPY . .
+# Copy dependency list first
+COPY requirements.txt .
 
-RUN pip install -r requirements.txt
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
+# COPY ALL APPLICATION FILES TO /app
+COPY . /app/
+
+# Run app.py
 CMD ["python", "app.py"]
