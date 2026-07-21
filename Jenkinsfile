@@ -14,7 +14,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     credentialsId: 'git-cred',
-                    url: 'https://github.com/username/python-app.git'
+                    url: 'https://github.com/Ankurpdy/python-clone.git'
             }
         }
 
