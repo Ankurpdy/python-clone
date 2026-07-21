@@ -1,55 +1,40 @@
 pipeline {
-  agent any
+    agent any
 
-  triggers {
-    githubPush()
-  }
-
-  options {
-    timestamps()
-    disableConcurrentBuilds()
-    buildDiscarder(logRotator(numToKeepStr: '20'))
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+    environment {
+        VM_HOST = "192.168.189.128"
+        VM_USER = "ubuntu"
+        APP_DIR = "/home/ubuntu/python-app"
+        IMAGE_NAME = "python-app:latest"
     }
 
-    stage('Install dependencies') {
-      steps {
-        sh '''
-          set -eu
-          python3 --version
-          python3 -m venv .venv
-          . .venv/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-        '''
-      }
-    }
+    stages {
 
-    stage('Validate source code') {
-      steps {
-        sh '''
-          set -eu
-          . .venv/bin/activate
-          python -m compileall -q main.py helpers.py image_handler.py font_utils.py
-          python -c "import cv2, keyboard, numpy; from PIL import Image; print('Dependencies imported successfully.')"
-        '''
-      }
-    }
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    credentialsId: 'github-creds',
+                    url: 'https://github.com/username/python-app.git'
+            }
+        }
 
-    stage('Package application') {
-      steps {
-        sh '''
-          rm -f ASCIICAM.tar.gz
-          tar -czf ASCIICAM.tar.gz main.py helpers.py image_handler.py font_utils.py requirements.txt README.md LICENSE img
-        '''
-        archiveArtifacts artifacts: 'ASCIICAM.tar.gz', fingerprint: true
-      }
+        stage('Copy Project to VM') {
+            steps {
+                sh """
+                    rsync -av --delete ./ ${VM_USER}@${VM_HOST}:${APP_DIR}/
+                """
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh """
+                    ssh ${VM_USER}@${VM_HOST} '
+                        cd ${APP_DIR}
+                        docker build -t ${IMAGE_NAME} .
+                    '
+                """
+            }
+        }
     }
-  }
 }
