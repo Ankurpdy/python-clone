@@ -38,15 +38,31 @@ pipeline {
 }
         stage('Archive Artifact') {
             steps {
-                // 4. Store the .tar file in Jenkins as a build artifact
                 archiveArtifacts artifacts: 'python-app-latest.tar', fingerprint: true
+            }
+        }
+
+        stage('Deploy Container') {
+            steps {
+                sh '''
+                    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ankur@192.168.189.128 '
+                        # Stop and remove existing container if it exists
+                        docker stop python-app-container || true
+                        docker rm python-app-container || true
+
+                        # Load artifact tar image back into Docker (ensures artifact integrity)
+                        docker load -i /home/ankur/python-app/python-app-latest.tar
+
+                        # Run container binding port 5000 to local localhost
+                        docker run -d --name python-app-container --restart unless-stopped -p 127.0.0.1:5000:5000 python-app:latest
+                    '
+                '''
             }
         }
     }
 
     post {
         always {
-            // Optional cleanup: remove local tar archive from Jenkins workspace to save disk space
             cleanWs()
         }
     }
