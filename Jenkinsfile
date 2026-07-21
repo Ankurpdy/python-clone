@@ -1,13 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        VM_HOST = "192.168.189.128"
-        VM_USER = "ubuntu"
-        APP_DIR = "/home/ubuntu/python-app"
-        IMAGE_NAME = "python-app:latest"
-    }
-
     stages {
 
         stage('Checkout') {
