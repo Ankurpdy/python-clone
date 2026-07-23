@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
-                git credentialsId: 'github-creds', url: 'https://github.com/Ankurpdy/python-app.git', branch: 'main'
+                git credentialsId: 'git-cred', url: 'https://github.com/Ankurpdy/python-clone.git', branch: 'main'
             }
         }
 
